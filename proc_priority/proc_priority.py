@@ -5,14 +5,6 @@ import psutil
 #based on https://code.activestate.com/recipes/496767/
 import win32api,win32process,win32con
 
-"""
-IDLE				= 1,
-BELOW_NORMAL	= 5,
-NORMAL			= 7,
-ABOVE_NORMAL	= 6,
-HIGH				= 10,
-REALTIME			= ?
-"""
 PRIORITY = {
 	None: None, #shrug
 	"None": None,
