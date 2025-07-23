@@ -1,15 +1,16 @@
 import sys
 import os
+from dataclasses import dataclass
 import psutil
 #based on https://code.activestate.com/recipes/496767/
 import win32api,win32process,win32con
 
 """
-IDLE				= 1
-BELOW_NORMAL	= 5
-NORMAL			= 7
-ABOVE_NORMAL	= 6
-HIGH				= 10
+IDLE				= 1,
+BELOW_NORMAL	= 5,
+NORMAL			= 7,
+ABOVE_NORMAL	= 6,
+HIGH				= 10,
 REALTIME			= ?
 """
 PRIORITY = {
@@ -28,58 +29,69 @@ PRIORITY = {
 }
 
 IOPRIO = {
-	None: None,
+	None: None, #shrug pt.II
 	"None": None,
 	"": None,
 	"VERY_LOW": psutil.IOPRIO_VERYLOW,
 	"VERYLOW": psutil.IOPRIO_VERYLOW,
 	"LOW": psutil.IOPRIO_LOW,
 	"NORMAL": psutil.IOPRIO_NORMAL,
-	"HIGH": psutil.IOPRIO_HIGH #? if available
+	"HIGH": psutil.IOPRIO_HIGH #if available
 }
 
+@dataclass
+class t_priority:
+	name: str
+	nice: type(PRIORITY)
+	ionice: type(IOPRIO)
+
+
 priority_list = [];
-with open("list.csv",'r') as priority_file:
-	flines = priority_file.readlines(); #get as a list
-	priority_list = flines.sort();
+with open("list.csv",'r') as list_file:
+	if list_file is not None:
+		flines = sorted(list_file.readlines()[1:]); #skip example/title
+		for cline in flines:
+			if(cline[0] == '#'): #skip comment
+				continue
+			seg = cline.split(",");
+			try:
+				#erase newlines first
+				if (seg[2][-2]) == '\r\n':
+					seg[2] = seg[2][:-2]
+				if (seg[2][-1]) == '\n':
+					seg[2] = seg[2][:-1]
+				
+				priority_list.append(t_priority( seg[0], PRIORITY[seg[1]], IOPRIO[seg[2]] ));
+			except:
+				print(f"\b\n(!) Invalid priority value:\n{seg}\nMoving on...")
+	#fi
+#close
 
 #for skipping
 sorted_proc_list = sorted(psutil.process_iter(attrs=['name']), key=lambda p: p.info['name'] or "")
 
-def setProcessPriority(pname,benice=None,ionice=None):
-	"""
-		Either priority type is optional.
-		TODO: skip more, faster.
-	"""
+def setPriorityTyped(opt:t_priority): #for CSV
+	#TODO: skip more, faster
 	for proc in sorted_proc_list: #loop in python ew
 		try: #Don't die if permission denied
 			cname = proc.info['name']
-			if pname > cname:
+			if opt.name > cname:
 				continue
-			elif pname == cname:
-				if PRIORITY[benice] is not None:
-					proc.nice(PRIORITY[benice])
-				if IOPRIO[ionice] is not None:
-					proc.ionice(IOPRIO[ionice])
-			else: #pname < proc.name():
+			elif opt.name == cname:
+				if opt.nice is not None:
+					proc.nice(opt.nice)
+				if opt.ionice is not None:
+					proc.ionice(opt.ionice)
+			else: #opt.name < proc.name():
 				break #passed matching target, give up
 		except:
-			print(f"\n[!] Permission denied for {pname}\n")
+			print(f"\b\n(!) Permission denied: {opt.name}\nMoving on...")
+
+def setPriority(pname:str,benice:str,ionice:str): #for API
+	#Either priority type is optional
+	setPriorityTyped(t_priority( pname, PRIORITY[benice], IOPRIO[ionice] ))
 
 
-def splitLines(the_text):		#TODO placeholder
-	return the_text.split(",")
-
-if __name__ == "__TEST_TODO__":
-	for line in priority_list:		#TODO placeholder
-		try:
-			splitLines(line)
-		except:
-			break
-##
-
-if __name__ == "__main__":  #Example
-	setProcessPriority("Discord.exe","IDLE","VERYLOW")
-	setProcessPriority("librewolf.exe","IDLE","VERYLOW")
-	setProcessPriority("obs-browser-page.exe",None,"LOW")
-	setProcessPriority("pwsh.exe","IDLE","VERYLOW")
+if __name__ == "__main__": 
+	for ep in priority_list:
+		setPriorityTyped(ep)
