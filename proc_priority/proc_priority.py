@@ -1,12 +1,14 @@
 import sys
 import os
 from dataclasses import dataclass
+#from varname.helpers import debug as vdebug
+#from functools import partial,wraps
 import psutil
 #based on https://code.activestate.com/recipes/496767/
 import win32api,win32process,win32con
 
 PRIORITY = {
-	None: None, #shrug
+	None: None,
 	"None": None,
 	"": None,
 	"LOW": psutil.IDLE_PRIORITY_CLASS,
@@ -37,6 +39,7 @@ class t_priority:
 	nice: type(PRIORITY)
 	ionice: type(IOPRIO)
 
+#dbgPrint = partial(vdebug, prefix="[DATA] ", merge=True, sep=": ")
 
 priority_list = [];
 with open("list.csv",'r') as list_file:
@@ -45,12 +48,13 @@ with open("list.csv",'r') as list_file:
 		for cline in flines:
 			if(cline[0] == '#'): #skip comment
 				continue
+			#dbgPrint(cline)
 			seg = cline.split(",");
 			try:
-				#erase newlines first
-				if (seg[2][-2]) == '\r\n':
+				#ignore newlines
+				if(seg[2][-2]) == '\r\n':
 					seg[2] = seg[2][:-2]
-				if (seg[2][-1]) == '\n':
+				if(seg[2][-1]) == '\n':
 					seg[2] = seg[2][:-1]
 				
 				priority_list.append(t_priority( seg[0], PRIORITY[seg[1]], IOPRIO[seg[2]] ));
