@@ -1,8 +1,6 @@
 import sys
 import os
 from dataclasses import dataclass
-#from varname.helpers import debug as vdebug
-#from functools import partial,wraps
 import psutil
 #based on https://code.activestate.com/recipes/496767/
 import win32api,win32process,win32con
@@ -39,8 +37,6 @@ class t_priority:
 	nice: type(PRIORITY)
 	ionice: type(IOPRIO)
 
-#dbgPrint = partial(vdebug, prefix="[DATA] ", merge=True, sep=": ")
-
 priority_list = [];
 with open("list.csv",'r') as list_file:
 	if list_file is not None:
@@ -48,7 +44,6 @@ with open("list.csv",'r') as list_file:
 		for cline in flines:
 			if(cline[0] == '#'): #skip comment
 				continue
-			#dbgPrint(cline)
 			seg = cline.split(",");
 			try:
 				#ignore newlines
@@ -67,8 +62,7 @@ with open("list.csv",'r') as list_file:
 sorted_proc_list = sorted(psutil.process_iter(attrs=['name']), key=lambda p: p.info['name'] or "")
 
 def setPriorityTyped(opt:t_priority): #for CSV
-	#TODO: skip more, faster
-	for proc in sorted_proc_list: #loop in python ew
+	for proc in sorted_proc_list: #python loops ew
 		try: #Don't die if permission denied
 			cname = proc.info['name']
 			if opt.name > cname:
