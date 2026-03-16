@@ -21,7 +21,7 @@ PRIORITY = {
 }
 
 IOPRIO = {
-	None: None, #shrug pt.II
+	None: None,
 	"None": None,
 	"": None,
 	"VERY_LOW": psutil.IOPRIO_VERYLOW,
@@ -37,8 +37,16 @@ class t_priority:
 	nice: type(PRIORITY)
 	ionice: type(IOPRIO)
 
+@dataclass
+class n_priority:
+	pid: int
+	nice: type(PRIORITY)
+	ionice: type(IOPRIO)
+
+
 priority_list = [];
-with open("list.csv",'r') as list_file:
+list_csv = os.path.dirname(os.path.realpath(__file__))+"/list.csv"
+with open(list_csv,'r') as list_file:
 	if list_file is not None:
 		flines = sorted(list_file.readlines()[1:]); #skip example/title
 		for cline in flines:
@@ -58,11 +66,34 @@ with open("list.csv",'r') as list_file:
 	#fi
 #close
 
+pid_list = [];
+list_csv = os.path.dirname(os.path.realpath(__file__))+"/listPID.csv"
+with open(list_csv,'r') as list_file:
+	if list_file is not None:
+		flines = sorted(list_file.readlines()[1:]); #skip example/title
+		for cline in flines:
+			if(cline[0] == '#'): #skip comment
+				continue
+			seg = cline.split(",");
+			try:
+				#ignore newlines
+				if(seg[2][-2]) == '\r\n':
+					seg[2] = seg[2][:-2]
+				if(seg[2][-1]) == '\n':
+					seg[2] = seg[2][:-1]
+				
+				pid_list.append(n_priority( seg[0], PRIORITY[seg[1]], IOPRIO[seg[2]] ));
+			except:
+				(f"\b\n(!) Invalid priority value:\n{seg}\nMoving on...")
+	#fi
+#close
+
 #for skipping
 sorted_proc_list = sorted(psutil.process_iter(attrs=['name']), key=lambda p: p.info['name'] or "")
 
 def setPriorityTyped(opt:t_priority): #for CSV
-	for proc in sorted_proc_list: #python loops ew
+	#TODO: skip more, faster
+	for proc in sorted_proc_list: #loop in python ew
 		try: #Don't die if permission denied
 			cname = proc.info['name']
 			if opt.name > cname:
@@ -75,7 +106,21 @@ def setPriorityTyped(opt:t_priority): #for CSV
 			else: #opt.name < proc.name():
 				break #passed matching target, give up
 		except:
-			print(f"\b\n(!) Permission denied: {opt.name}\nMoving on...")
+			(f"\b\n(!) Permission denied: {opt.name}\nMoving on...")
+
+sorted_pid_list = psutil.pids()
+def setPriorityPID(opt:n_priority): #for CSV
+	#TODO: skip more, faster
+	if psutil.pid_exists(opt.pid):
+		proc = psutil.Process(opt.pid)
+		try: #Don't die if permission denied
+			if opt.nice is not None:
+				proc.nice(opt.nice)
+			if opt.ionice is not None:
+				proc.ionice(opt.ionice)
+		except:
+			print(f"\b\n(!) Denied: {opt.name}@{opt.pid}\nMoving on...")
+
 
 def setPriority(pname:str,benice:str,ionice:str): #for API
 	#Either priority type is optional
@@ -85,3 +130,5 @@ def setPriority(pname:str,benice:str,ionice:str): #for API
 if __name__ == "__main__": 
 	for ep in priority_list:
 		setPriorityTyped(ep)
+	#for ep in pid_list:
+	#	setPriorityPID(ep)
