@@ -43,7 +43,6 @@ class n_priority:
 	nice: type(PRIORITY)
 	ionice: type(IOPRIO)
 
-
 priority_list = [];
 list_csv = os.path.dirname(os.path.realpath(__file__))+"/list.csv"
 with open(list_csv,'r') as list_file:
@@ -64,7 +63,7 @@ with open(list_csv,'r') as list_file:
 			except:
 				print(f"\b\n(!) Invalid priority value:\n{seg}\nMoving on...")
 	#fi
-#close
+#open
 
 pid_list = [];
 list_csv = os.path.dirname(os.path.realpath(__file__))+"/listPID.csv"
@@ -84,11 +83,10 @@ with open(list_csv,'r') as list_file:
 				
 				pid_list.append(n_priority( seg[0], PRIORITY[seg[1]], IOPRIO[seg[2]] ));
 			except:
-				(f"\b\n(!) Invalid priority value:\n{seg}\nMoving on...")
+				print(f"\b\n(!) Invalid priority value:\n{seg}\nMoving on...")
 	#fi
-#close
+#open
 
-#for skipping
 sorted_proc_list = sorted(psutil.process_iter(attrs=['name']), key=lambda p: p.info['name'] or "")
 
 def setPriorityTyped(opt:t_priority): #for CSV
@@ -106,29 +104,26 @@ def setPriorityTyped(opt:t_priority): #for CSV
 			else: #opt.name < proc.name():
 				break #passed matching target, give up
 		except:
-			(f"\b\n(!) Permission denied: {opt.name}\nMoving on...")
+			print(f"\b\n(!) Permission denied: {opt.name}\nMoving on...")
 
-sorted_pid_list = psutil.pids()
-def setPriorityPID(opt:n_priority): #for CSV
-	#TODO: skip more, faster
-	if psutil.pid_exists(opt.pid):
-		proc = psutil.Process(opt.pid)
-		try: #Don't die if permission denied
-			if opt.nice is not None:
-				proc.nice(opt.nice)
-			if opt.ionice is not None:
-				proc.ionice(opt.ionice)
-		except:
-			print(f"\b\n(!) Denied: {opt.name}@{opt.pid}\nMoving on...")
-
+#sorted_pid_list = psutil.pids()
+#def setPriorityPID(opt:n_priority): #for CSV
+#	#TODO: skip more, faster
+#	if psutil.pid_exists(opt.pid):
+#		proc = psutil.Process(opt.pid)
+#		try: #Don't die if permission denied
+#			if opt.nice is not None:
+#				proc.nice(opt.nice)
+#			if opt.ionice is not None:
+#				proc.ionice(opt.ionice)
+#		except:
+#			print(f"\b\n(!) Permission denied: {opt.name}@{opt.pid}\nMoving on...")
 
 def setPriority(pname:str,benice:str,ionice:str): #for API
 	#Either priority type is optional
 	setPriorityTyped(t_priority( pname, PRIORITY[benice], IOPRIO[ionice] ))
 
-
-if __name__ == "__main__": 
-	for ep in priority_list:
-		setPriorityTyped(ep)
-	#for ep in pid_list:
-	#	setPriorityPID(ep)
+for ep in priority_list:
+	setPriorityTyped(ep)
+#for ep in pid_list:
+#	setPriorityPID(ep)
