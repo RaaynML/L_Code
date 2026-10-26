@@ -10,7 +10,7 @@ Lossy (non-reversible) deduplication.
 Mostly for strings of noise.
 
 ### minify_basic
-"Simple" Javascript/C++ minifier.
+"Simple" Javascript/C++ "minifier".
 For removing whitespace; Does not change variable/function names.
 
 ### unTiler
