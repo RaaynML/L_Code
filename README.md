@@ -3,19 +3,24 @@ random tools
 
 ### [proc_priority](https://github.com/RaaynML/L_Code/tree/main/proc_priority)
 Change CPU & IO priority of running programs using psutil.
+
 Needs admin to change higher privilege processes.
 
 ### [RLEpack](https://github.com/RaaynML/L_Code/tree/main/RLEpack)
 Lossy (non-reversible) deduplication.
+
 Mostly for strings of noise.
 
 ### [minify_basic](https://github.com/RaaynML/L_Code/tree/main/minify_basic)
 "Simple" Javascript/C++ "minifier".
+
 For removing whitespace; Does not change variable/function names.
 
 ### [unTiler](https://github.com/RaaynML/L_Code/tree/main/unTiler)
 tiler/untiler for images.
+
 For making 4096x64 LUTs into OBS-compatible 512x512 LUTs
+
 Or just for tiling/collating square images.
 
 
